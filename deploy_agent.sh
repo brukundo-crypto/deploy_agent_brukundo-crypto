@@ -100,6 +100,30 @@ update_thresholds() {
     echo "  Thresholds updated: warning $new_warning, failure $new_failure."
 }
 
+run_project() {
+    if [ -z "$project_dir" ]; then
+        read -p "Enter the project name to run: " project_name
+        project_dir="attendance_tracker_${project_name}"
+    fi
+
+    if [ ! -d "$project_dir" ]; then
+        echo "ERROR: '$project_dir' does not exist. Deploy it first."
+        exit 1
+    fi
+
+    if [ ! -f "$project_dir/attendance_checker.py" ]; then
+        echo "ERROR: '$project_dir' is missing attendance_checker.py."
+        exit 1
+    fi
+
+    echo ""
+    echo "Starting the attendance session in '$project_dir'..."
+    echo "-------------------------------------------------"
+    ( cd "$project_dir" && python3 attendance_checker.py )
+    echo "-------------------------------------------------"
+    echo "Attendance session finished."
+}
+
 deploy_project() {
     check_dependencies
 
@@ -149,6 +173,10 @@ deploy_project() {
     chmod 600 "$project_dir/Helpers/config.json"
     echo "  attendance_checker.py  -> executable (+x)"
     echo "  Helpers/config.json    -> owner read/write only (600)"
+
+    echo ""
+    echo "Deployment complete. Verifying by running the application..."
+    run_project
 }
 
 show_menu() {
@@ -171,7 +199,7 @@ case "$choice" in
         deploy_project
         ;;
     2)
-        echo "You chose: Run"
+        run_project
         ;;
     3)
         echo "You chose: Archive"
