@@ -110,6 +110,12 @@ deploy_project() {
 
     sed -i "s/\"total_sessions\": [0-9]*/\"total_sessions\": $total_sessions/" "$project_dir/Helpers/config.json"
     echo "  Set total_sessions to $total_sessions to match the roster."
+
+    echo "Setting permissions..."
+    chmod +x "$project_dir/attendance_checker.py"
+    chmod 600 "$project_dir/Helpers/config.json"
+    echo "  attendance_checker.py  -> executable (+x)"
+    echo "  Helpers/config.json    -> owner read/write only (600)"
 }
 
 show_menu() {
