@@ -69,6 +69,37 @@ build_roster() {
     esac
 }
 
+update_thresholds() {
+    echo ""
+    read -p "Update the attendance alert thresholds? [y/N]: " update_answer
+
+    if [ "$update_answer" != "y" ] && [ "$update_answer" != "Y" ]; then
+        echo "  Keeping the default thresholds (warning 75, failure 50)."
+        return
+    fi
+
+    read -p "New warning threshold (default 75): " new_warning
+    if ! [[ "$new_warning" =~ ^[0-9]+$ ]]; then
+        echo "ERROR: The warning threshold must be a number."
+        exit 1
+    fi
+
+    read -p "New failure threshold (default 50): " new_failure
+    if ! [[ "$new_failure" =~ ^[0-9]+$ ]]; then
+        echo "ERROR: The failure threshold must be a number."
+        exit 1
+    fi
+
+    if [ "$new_failure" -ge "$new_warning" ]; then
+        echo "ERROR: The failure threshold must be lower than the warning threshold."
+        exit 1
+    fi
+
+    sed -i "s/\"warning\": [0-9]*/\"warning\": $new_warning/" "$project_dir/Helpers/config.json"
+    sed -i "s/\"failure\": [0-9]*/\"failure\": $new_failure/" "$project_dir/Helpers/config.json"
+    echo "  Thresholds updated: warning $new_warning, failure $new_failure."
+}
+
 deploy_project() {
     check_dependencies
 
@@ -110,6 +141,8 @@ deploy_project() {
 
     sed -i "s/\"total_sessions\": [0-9]*/\"total_sessions\": $total_sessions/" "$project_dir/Helpers/config.json"
     echo "  Set total_sessions to $total_sessions to match the roster."
+
+    update_thresholds
 
     echo "Setting permissions..."
     chmod +x "$project_dir/attendance_checker.py"
