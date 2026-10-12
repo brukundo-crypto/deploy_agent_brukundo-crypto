@@ -19,6 +19,56 @@ check_dependencies() {
     echo "All required tools are available."
 }
 
+build_roster() {
+    echo ""
+    echo "How should the student roster be built?"
+    echo "  A) Copy students from the sample roster"
+    echo "  B) Generate a fresh roster (all counts start at 0)"
+    read -p "Choose [A/B]: " roster_choice
+
+    case "$roster_choice" in
+        a|A)
+            read -p "How many students to copy? (1-10): " student_count
+            if ! [[ "$student_count" =~ ^[0-9]+$ ]]; then
+                echo "ERROR: That is not a number."
+                exit 1
+            fi
+            if [ "$student_count" -lt 1 ] || [ "$student_count" -gt 10 ]; then
+                echo "ERROR: Please choose between 1 and 10."
+                exit 1
+            fi
+            head -n $((student_count + 1)) templates/assets.csv > "$project_dir/Helpers/assets.csv"
+            total_sessions=5
+            echo "  Copied $student_count students from the sample roster."
+            ;;
+        b|B)
+            read -p "How many students to generate? (1-10): " student_count
+            if ! [[ "$student_count" =~ ^[0-9]+$ ]]; then
+                echo "ERROR: That is not a number."
+                exit 1
+            fi
+            if [ "$student_count" -lt 1 ] || [ "$student_count" -gt 10 ]; then
+                echo "ERROR: Please choose between 1 and 10."
+                exit 1
+            fi
+
+            sample_names=("Grace Uwase" "Eric Mugisha" "Linda Keza" "Samuel Hakizimana" "Aline Mukamana" "David Nkurunziza" "Claudine Ingabire" "Patrick Niyonzima" "Sandrine Umutoni" "Kevin Byiringiro")
+            sample_emails=("grace@example.com" "eric@example.com" "linda@example.com" "samuel@example.com" "aline@example.com" "david@example.com" "claudine@example.com" "patrick@example.com" "sandrine@example.com" "kevin@example.com")
+
+            echo "Email,Names,Attendance Count,Absence Count" > "$project_dir/Helpers/assets.csv"
+            for ((i = 0; i < student_count; i++)); do
+                echo "${sample_emails[$i]},${sample_names[$i]},0,0" >> "$project_dir/Helpers/assets.csv"
+            done
+            total_sessions=1
+            echo "  Generated $student_count students with zero prior sessions."
+            ;;
+        *)
+            echo "ERROR: Please choose A or B."
+            exit 1
+            ;;
+    esac
+}
+
 deploy_project() {
     check_dependencies
 
@@ -49,6 +99,17 @@ deploy_project() {
     echo "  Created: $project_dir/"
     echo "  Created: $project_dir/Helpers/"
     echo "  Created: $project_dir/reports/"
+
+    echo "Copying application files..."
+    cp templates/attendance_checker.py "$project_dir/attendance_checker.py"
+    cp templates/config.json "$project_dir/Helpers/config.json"
+    echo "  Copied: attendance_checker.py"
+    echo "  Copied: config.json"
+
+    build_roster
+
+    sed -i "s/\"total_sessions\": [0-9]*/\"total_sessions\": $total_sessions/" "$project_dir/Helpers/config.json"
+    echo "  Set total_sessions to $total_sessions to match the roster."
 }
 
 show_menu() {
