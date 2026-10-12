@@ -124,6 +124,48 @@ run_project() {
     echo "Attendance session finished."
 }
 
+archive_logs() {
+    if [ -z "$project_dir" ]; then
+        read -p "Enter the project name to archive: " project_name
+        project_dir="attendance_tracker_${project_name}"
+    fi
+
+    if [ ! -d "$project_dir" ]; then
+        echo "ERROR: '$project_dir' does not exist."
+        exit 1
+    fi
+
+    timestamp=$(date +"%Y%m%d_%H%M%S")
+    archived_any=0
+
+    echo ""
+    echo "Archiving logs from '$project_dir'..."
+
+    if [ -f "$project_dir/reports/attendance.log" ]; then
+        mkdir -p "$project_dir/archives/attendance"
+        cp "$project_dir/reports/attendance.log" "$project_dir/archives/attendance/attendance_${timestamp}.log"
+        echo "  Archived: $project_dir/archives/attendance/attendance_${timestamp}.log"
+        archived_any=1
+    else
+        echo "  Skipped: reports/attendance.log does not exist."
+    fi
+
+    if [ -f "$project_dir/reports/absent.log" ]; then
+        mkdir -p "$project_dir/archives/absent"
+        cp "$project_dir/reports/absent.log" "$project_dir/archives/absent/absent_${timestamp}.log"
+        echo "  Archived: $project_dir/archives/absent/absent_${timestamp}.log"
+        archived_any=1
+    else
+        echo "  Skipped: reports/absent.log does not exist (nobody was absent)."
+    fi
+
+    if [ "$archived_any" -eq 0 ]; then
+        echo "Nothing was archived. Run the application first."
+    else
+        echo "Archiving complete."
+    fi
+}
+
 deploy_project() {
     check_dependencies
 
@@ -202,7 +244,7 @@ case "$choice" in
         run_project
         ;;
     3)
-        echo "You chose: Archive"
+        archive_logs
         ;;
     4)
         echo "Goodbye."
