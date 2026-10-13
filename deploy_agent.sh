@@ -1,6 +1,32 @@
 #!/usr/bin/env bash
 # deploy_agent.sh - deploys, runs and archives the Student Attendance Tracker
 
+handle_interrupt() {
+    echo ""
+    echo "====================================="
+    echo "  DEPLOYMENT INTERRUPTED"
+    echo "====================================="
+    echo "The deployment was stopped before it finished."
+
+    if [ -n "$project_dir" ] && [ -d "$project_dir" ]; then
+        archive_name="${project_dir}_archive.zip"
+        echo "Zipping the incomplete project into '$archive_name'..."
+        if zip -r "$archive_name" "$project_dir" > /dev/null 2>&1; then
+            echo "  Saved: $archive_name"
+            rm -rf "$project_dir"
+            echo "  Removed the incomplete directory '$project_dir'."
+        else
+            echo "  WARNING: could not create the zip archive."
+            echo "  The incomplete directory '$project_dir' was left in place."
+        fi
+    else
+        echo "No project directory had been created yet. Nothing to clean up."
+    fi
+
+    echo "Exiting cleanly."
+    exit 130
+}
+
 check_dependencies() {
     echo "Checking required tools..."
 
@@ -167,6 +193,8 @@ archive_logs() {
 }
 
 deploy_project() {
+    trap handle_interrupt SIGINT SIGTSTP
+
     check_dependencies
 
     read -p "Enter a project name: " project_name
@@ -215,6 +243,8 @@ deploy_project() {
     chmod 600 "$project_dir/Helpers/config.json"
     echo "  attendance_checker.py  -> executable (+x)"
     echo "  Helpers/config.json    -> owner read/write only (600)"
+
+    trap - SIGINT SIGTSTP
 
     echo ""
     echo "Deployment complete. Verifying by running the application..."
