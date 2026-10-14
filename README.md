@@ -120,4 +120,4 @@ What is inside the zip depends on when I interrupt. At the roster question it ho
 - I tried an empty project name, letters instead of a student count, letters instead of a threshold, a failure value above the warning value, and a student count above 10. Each was rejected with its own message.
 - I ran it on Ubuntu 20.04.
 
-[Play Video](https://www.loom.com/share/920251728337439490f7596c9229ed56)
+[Play Video](https://www.loom.com/share/b1a2f8508d1e4fbabc79275835136274)
