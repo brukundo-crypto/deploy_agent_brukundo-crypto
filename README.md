@@ -119,3 +119,5 @@ What is inside the zip depends on when I interrupt. At the roster question it ho
 - I interrupted a deploy with Ctrl+C and with Ctrl+Z, checked the zip was created and the folder was gone, and interrupted before entering a name to confirm it reports nothing to clean up.
 - I tried an empty project name, letters instead of a student count, letters instead of a threshold, a failure value above the warning value, and a student count above 10. Each was rejected with its own message.
 - I ran it on Ubuntu 20.04.
+
+[Play Video](https://www.loom.com/share/920251728337439490f7596c9229ed56)
